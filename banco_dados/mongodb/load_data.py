@@ -1,12 +1,8 @@
 #  Copyright (c) 2021. Hexagoon. Criador: Fabricio Gatto Lourençone. Todos os direitos reservados.
-import datetime
-import json
 
 from bson import ObjectId
 from passlib.hash import bcrypt
 
-from api.v1.artigo.model.artigo_model import Artigo
-from api.v1.modalidade_artigo.model.modalidade_artigo_model import ModalidadeArtigo, ModalidadeArtigoInUpdate
 from api.v1.role.model.role_model import Role, SubRoles, RoleUsuario
 from api.v1.usuario.model.usuario_model import Usuario, UsuarioReduzido
 from banco_dados.mongodb.configuracao.MongoConection import Operacoes, Sessao
@@ -130,84 +126,4 @@ def load_data():
                 }
             )
             usuario.roles.append(role_root)
-            usuario = UsuarioReduzido(**sessao.insert(session, usuario))
-
-            # cria a collection artigos com validação de esquema
-            sessao.get_db().drop_collection(name_or_collection=ModalidadeArtigo.Config.title, session=session)
-            sessao.get_db().create_collection(
-                name=ModalidadeArtigo.Config.title,
-                validator={
-                    "$jsonSchema": {
-                        "bsonType": "object",
-                        "required": ["nome"],
-                        "properties": {
-                            "nome": {
-                                "bsonType": "string"
-                            }
-                        }
-                    }
-                }
-            )
-            modalidade_artigo = ModalidadeArtigoInUpdate(**sessao.insert(session, ModalidadeArtigo(nome='Hexagoon Base')))
-
-            # cria a collection artigos com validação de esquema
-            sessao.get_db().drop_collection(name_or_collection=Artigo.Config.title, session=session)
-            sessao.get_db().create_collection(
-                name=Artigo.Config.title,
-                validator={
-                    "$jsonSchema": {
-                        "bsonType": "object",
-                        "required": ["titulo", "corpo", "modalidade_artigo", "criado_em", "criado_por"],
-                        "properties": {
-                            "titulo": {
-                                "bsonType": "string"
-                            },
-                            "corpo": {
-                                "bsonType": "string"
-                            },
-                            "modalidade_artigo": {
-                                "bsonType": "object",
-                                "required": ["_id", "nome"],
-                                "additionalProperties": False,
-                                "properties": {
-                                    "_id": {
-                                        "bsonType": "objectId",
-                                        "description": "O _id do usuario criador"
-                                    },
-                                    "nome": {
-                                        "bsonType": "string",
-                                        "description": "nome do usuário criador do artigo"
-                                    }
-                                }
-                            },
-                            "criado_em": {
-                                "bsonType": "date"
-                            },
-                            "criado_por": {
-                                "bsonType": "object",
-                                "required": ["_id", "nome"],
-                                "additionalProperties": False,
-                                "properties": {
-                                    "_id": {
-                                        "bsonType": "objectId",
-                                        "description": "O _id do usuario criador"
-                                    },
-                                    "nome": {
-                                        "bsonType": "string",
-                                        "description": "nome do usuário criador do artigo"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            )
-            artigo = Artigo(
-                titulo='Artigo Primeiro',
-                corpo=json.dumps({"blocks": [
-                    {"data": {"level": 2, "text": "Bem Vindo ao Hexagoon"}, "id": "VlSDl34iWg", "type": "header"}]}),
-                modalidade_artigo=modalidade_artigo,
-                criado_em=datetime.datetime.now(),
-                criado_por=usuario
-            )
-            sessao.insert(session, artigo)
+            UsuarioReduzido(**sessao.insert(session, usuario))
